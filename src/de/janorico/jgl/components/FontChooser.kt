@@ -2,8 +2,7 @@ package de.janorico.jgl.components
 
 import java.awt.*
 import javax.swing.*
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
+import javax.swing.event.*
 
 /**
  * @author Janosch Lion

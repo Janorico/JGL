@@ -1,9 +1,10 @@
 package de.janorico.jgl.helpers
 
-import de.janorico.jgl.JGL
+import de.janorico.jgl.*
+import de.janorico.jgl.components.InputPanel
 import java.awt.*
-import javax.swing.JDialog
-import javax.swing.JPanel
+import java.awt.event.KeyEvent
+import javax.swing.*
 
 /**
  * Contains methods for creating and showing dialogs.
@@ -13,42 +14,103 @@ import javax.swing.JPanel
  */
 object Dialog {
     /**
+     * Shows an input dialog with multiple values.
+     * @see createInputDialog
+     * @see de.janorico.jgl.Input
+     * @see de.janorico.jgl.components.InputPanel
+     */
+    fun showInputDialog(
+        title: String,
+        inputs: Array<Input>,
+        onOk: (states: Map<String, String>) -> Unit,
+        onCancel: (states: Map<String, String>) -> Unit,
+        titlePrefix: Boolean = true,
+    ) {
+        createInputDialog(title, inputs, onOk, onCancel, titlePrefix).isVisible = true
+    }
+
+    /**
+     * Creates an input dialog with multiple values.
+     * @see de.janorico.jgl.Input
+     * @see de.janorico.jgl.components.InputPanel
+     */
+    fun createInputDialog(
+        title: String,
+        inputs: Array<Input>,
+        onOk: (states: Map<String, String>) -> Unit,
+        onCancel: (states: Map<String, String>) -> Unit,
+        titlePrefix: Boolean = true,
+    ): JDialog {
+        val panels = Array(inputs.size) {
+            InputPanel(inputs[it])
+        }
+        return createDialog(title, { JPanel(GridLayout(inputs.size, 1)).apply { for (panel in panels) add(panel) } }, {
+            onOk(panelsToMap(panels))
+        }, {
+            onCancel(panelsToMap(panels))
+        }, titlePrefix)
+    }
+
+    private fun panelsToMap(panels: Array<InputPanel>): Map<String, String> = buildMap {
+        for (panel in panels) this[panel.getKey()] = panel.getValue()
+    }
+
+    /**
      * Shows a dialog with OK and Cancel buttons.
      */
-    fun showDialog(title: String, content: (dialog: JDialog) -> Component, onOk: () -> Unit, onCancel: () -> Unit) {
-        createDialog(title, content, onOk, onCancel).isVisible = true
+    fun showDialog(title: String, content: (dialog: JDialog) -> JComponent, onOk: () -> Unit, onCancel: () -> Unit, titlePrefix: Boolean = true) {
+        createDialog(title, content, onOk, onCancel, titlePrefix).isVisible = true
     }
 
     /**
      * Shows a simple dialog.
      */
-    fun showDialog(title: String, content: (dialog: JDialog) -> Component, bottomContent: (dialog: JDialog) -> Component? = { null }) {
-        createDialog(title, content, bottomContent).isVisible = true
+    fun showDialog(
+        title: String,
+        content: (dialog: JDialog) -> JComponent,
+        bottomContent: (dialog: JDialog) -> JComponent? = { null },
+        titlePrefix: Boolean = true,
+    ) {
+        createDialog(title, content, bottomContent, titlePrefix).isVisible = true
     }
 
     /**
      * Creates a dialog with OK and Cancel buttons.
      */
-    fun createDialog(title: String, content: (dialog: JDialog) -> Component, onOk: () -> Unit, onCancel: () -> Unit = {}): JDialog =
-        createDialog(title, content) { dialog: JDialog ->
-            val panel = JPanel(FlowLayout(FlowLayout.RIGHT))
-            panel.add(Button.create("OK", "Approves the dialog.") {
-                dialog.dispose()
-                onOk()
-            })
-            panel.add(Button.create("Cancel", "Cancels the dialog.") {
-                dialog.dispose()
-                onCancel()
-            })
-            return@createDialog panel
+    fun createDialog(
+        title: String,
+        content: (dialog: JDialog) -> JComponent,
+        onOk: () -> Unit,
+        onCancel: () -> Unit = {},
+        titlePrefix: Boolean = true,
+    ): JDialog = createDialog(title, content, BottomPanel@{ dialog: JDialog ->
+        val panel = JPanel(FlowLayout(FlowLayout.RIGHT))
+        val okButton = Button.create("OK", "Approves the dialog.") {
+            dialog.dispose()
+            onOk()
         }
+        panel.add(okButton)
+        dialog.rootPane.defaultButton = okButton
+        panel.add(Button.create("Cancel", "Cancels the dialog.") {
+            dialog.dispose()
+            onCancel()
+        })
+        return@BottomPanel panel
+    }, titlePrefix)
 
     /**
      * Creates a simple dialog.
      */
-    fun createDialog(title: String, content: (dialog: JDialog) -> Component, bottomContent: (dialog: JDialog) -> Component? = { null }): JDialog {
+    fun createDialog(
+        title: String,
+        content: (dialog: JDialog) -> JComponent,
+        bottomContent: (dialog: JDialog) -> JComponent? = { null },
+        titlePrefix: Boolean = true,
+    ): JDialog {
         val dialog = JDialog(JGL.dialogOwner)
-        dialog.add(content(dialog))
+        val content = content(dialog)
+        content.registerKeyboardAction({ dialog.dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        dialog.add(content)
         val bottomContentResult = bottomContent(dialog)
         if (bottomContentResult != null) dialog.add(bottomContentResult, BorderLayout.SOUTH)
 
@@ -56,7 +118,7 @@ object Dialog {
         dialog.defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
         dialog.isModal = true
         dialog.setLocationRelativeTo(JGL.dialogOwner)
-        dialog.title = title
+        dialog.title = if (titlePrefix) "${JGL.programName}: $title" else title
         return dialog
     }
 }

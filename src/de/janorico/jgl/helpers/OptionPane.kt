@@ -2,8 +2,7 @@ package de.janorico.jgl.helpers
 
 import de.janorico.jgl.JGL
 import java.awt.Toolkit
-import javax.swing.Icon
-import javax.swing.JOptionPane
+import javax.swing.*
 
 /**
  * Contains methods for showing option panes.
@@ -18,8 +17,23 @@ object OptionPane {
 
     fun overwriteFileDialog(): Int = showConfirmDialog("Overwrite file?", "Overwrite file", JOptionPane.YES_NO_OPTION)
 
+    fun overwriteFileDialog(file: String): Int =
+        showConfirmDialog("The file \"$file\" already exist. Do you want to overwrite it?", "Overwrite file", JOptionPane.YES_NO_OPTION)
+
     fun showConfirmDialog(message: Any, title: String, optionType: Int, messageType: Int = JOptionPane.QUESTION_MESSAGE, icon: Icon? = null): Int =
         JOptionPane.showConfirmDialog(JGL.dialogOwner, message, title, optionType, messageType, icon)
+
+    // OPTION DIALOG
+
+    fun showOptionDialog(
+        message: Any,
+        title: String,
+        options: Array<Any>,
+        initialValue: Any? = null,
+        optionType: Int = JOptionPane.OK_CANCEL_OPTION,
+        messageType: Int = JOptionPane.QUESTION_MESSAGE,
+        icon: Icon? = null,
+    ): Int = JOptionPane.showOptionDialog(JGL.dialogOwner, message, title, optionType, messageType, icon, options, initialValue)
 
     // INPUT DIALOG
 
