@@ -28,11 +28,15 @@ object SplashScreen {
      * @see java.lang.Thread.isAlive
      * @see java.lang.Thread.start
      */
-    fun show(icon: ImageIcon, thread: Thread, scale: Boolean = true) {
+    fun show(icon: ImageIcon, thread: Thread, minDuration: Int = 0, scale: Boolean = true) {
         val window = create(icon, scale)
         window.isVisible = true
+        val start = System.currentTimeMillis()
         if (!thread.isAlive) thread.start()
         while (thread.isAlive);
+        val end = System.currentTimeMillis()
+        if (end - start < minDuration)
+            Thread.sleep(minDuration - (end - start))
         window.dispose()
     }
 
