@@ -14,6 +14,9 @@ import kotlin.math.min
 object SplashScreen {
     /**
      * Shows a splash screen for the given time.
+     * @param icon The icon that gets displayed.
+     * @param millis The time the splash screen is visible in milliseconds.
+     * @param scale Indicates if the icon should be scaled to screen size.
      * @see java.lang.Thread.sleep
      */
     fun show(icon: ImageIcon, millis: Long, scale: Boolean = true) {
@@ -24,7 +27,10 @@ object SplashScreen {
     }
 
     /**
-     * Shows a splash screen while the tread is alive. If the thread not alive, it was by started.
+     * Shows a splash screen while the tread is alive. If the thread is not alive, it will be started.
+     * @param icon The icon that gets displayed.
+     * @param scale Indicates if the icon should be scaled to screen size.
+     * @param minDuration The minimum duration the splashscreen is visible.
      * @see java.lang.Thread.isAlive
      * @see java.lang.Thread.start
      */
@@ -41,9 +47,10 @@ object SplashScreen {
     }
 
     /**
-     * Creates a JWindow splash screen.
+     * Creates a JWindow splash screen. All other functions are based on this one.
      * @param icon The icon to display.
      * @param scale If true, the icon was scaled.
+     * @param scaleHints Which mode should be used for scaling the image. See Image.SCALE_
      */
     fun create(icon: ImageIcon, scale: Boolean = true, scaleHints: Int = Image.SCALE_SMOOTH): JWindow {
         // Creating window
