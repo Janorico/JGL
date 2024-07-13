@@ -63,6 +63,7 @@ object SplashScreen {
         }
         // Add icon to window via JLabel
         window.add(JLabel(icon))
+        window.cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
 
         // Pack the windows size
         window.pack()
