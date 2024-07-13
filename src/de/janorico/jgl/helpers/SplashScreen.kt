@@ -34,12 +34,31 @@ object SplashScreen {
      * @see java.lang.Thread.isAlive
      * @see java.lang.Thread.start
      */
+    @Deprecated("There is a better alternative.", ReplaceWith("show(icon, function, minDuration, scale)", "de.janorico.jgl.helpers.SplashScreen"))
     fun show(icon: ImageIcon, thread: Thread, minDuration: Int = 0, scale: Boolean = true) {
         val window = create(icon, scale)
         window.isVisible = true
         val start = System.currentTimeMillis()
         if (!thread.isAlive) thread.start()
         while (thread.isAlive);
+        val end = System.currentTimeMillis()
+        if (end - start < minDuration)
+            Thread.sleep(minDuration - (end - start))
+        window.dispose()
+    }
+
+    /**
+     * Shows a splash screen and calls the function. The splash will close when the function is done.
+     * @param icon The icon that gets displayed.
+     * @param function A function that gets executed.
+     * @param minDuration The minimum duration the splashscreen is visible, use it if the function is faster than you want the splashscreen to be displayed.
+     * @param scale Indicates if the icon should be scaled to screen size.
+     */
+    fun show(icon: ImageIcon, function: () -> Unit, minDuration: Int = 0, scale: Boolean = true) {
+        val window = create(icon, scale)
+        window.isVisible = true
+        val start = System.currentTimeMillis()
+        function()
         val end = System.currentTimeMillis()
         if (end - start < minDuration)
             Thread.sleep(minDuration - (end - start))
